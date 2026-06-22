@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const fallbackConfig = {
-    contactEmail: "",
-    whatsappNumber: "",
+    contactEmail: "jdag0698@gmail.com",
+    whatsappNumber: "573143935964",
     whatsappMessage: "Hola, vi el portafolio de HELIX y me gustaría conocer más sobre sus servicios.",
   };
   let publicConfig = fallbackConfig;

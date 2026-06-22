@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: helix-portafolio
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CONTACT_TO
+        value: jeanpall2020@gmail.com
+      - key: CONTACT_PUBLIC_EMAIL
+        value: jdag0698@gmail.com
+      - key: CONTACT_FROM
+        value: HELIX Web <onboarding@resend.dev>
+      - key: WHATSAPP_NUMBER
+        value: "573143935964"
+      - key: WHATSAPP_MESSAGE
+        value: Hola, vi el portafolio de HELIX y me gustaría conocer más sobre sus servicios.
+      - key: RESEND_API_KEY
+        sync: false
