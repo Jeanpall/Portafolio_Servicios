@@ -1,8 +1,17 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Reemplaza estos datos con los canales oficiales de HELIX.
-  const CONTACT_EMAIL = "contacto@tihelix.com";
-  const WHATSAPP_NUMBER = ""; // Formato internacional, solo números. Ejemplo Colombia: 573001234567
-  const WHATSAPP_MESSAGE = "Hola, vi el portafolio de HELIX y me gustaría conocer más sobre sus servicios.";
+document.addEventListener("DOMContentLoaded", async () => {
+  const fallbackConfig = {
+    contactEmail: "",
+    whatsappNumber: "",
+    whatsappMessage: "Hola, vi el portafolio de HELIX y me gustaría conocer más sobre sus servicios.",
+  };
+  let publicConfig = fallbackConfig;
+
+  try {
+    const configResponse = await fetch("/api/config", { headers: { Accept: "application/json" } });
+    if (configResponse.ok) publicConfig = { ...fallbackConfig, ...(await configResponse.json()) };
+  } catch {
+    // Los valores de respaldo mantienen operativos los canales al abrir el HTML sin servidor.
+  }
 
   const header = document.getElementById("header");
   const nav = document.querySelector(".nav");
@@ -68,14 +77,14 @@ document.addEventListener("DOMContentLoaded", () => {
   observedSections.forEach((section) => sectionObserver.observe(section));
 
   document.querySelectorAll("[data-email-link]").forEach((link) => {
-    link.href = `mailto:${CONTACT_EMAIL}`;
+    link.href = publicConfig.contactEmail ? `mailto:${publicConfig.contactEmail}` : "#contacto";
   });
   document.querySelectorAll("[data-email-text]").forEach((element) => {
-    element.textContent = CONTACT_EMAIL;
+    element.textContent = publicConfig.contactEmail || "Correo por configurar";
   });
 
-  const whatsappUrl = WHATSAPP_NUMBER
-    ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+  const whatsappUrl = publicConfig.whatsappNumber
+    ? `https://wa.me/${publicConfig.whatsappNumber}?text=${encodeURIComponent(publicConfig.whatsappMessage)}`
     : "";
 
   document.querySelectorAll("[data-whatsapp-link]").forEach((link) => {
@@ -94,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const contactForm = document.getElementById("contact-form");
-  contactForm?.addEventListener("submit", (event) => {
+  contactForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const requiredFields = [...contactForm.querySelectorAll("[required]")];
@@ -107,19 +116,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const data = new FormData(contactForm);
-    const subject = `Consulta comercial HELIX — ${data.get("empresa") || data.get("nombre")}`;
-    const body = [
-      `Nombre: ${data.get("nombre")}`,
-      `Empresa: ${data.get("empresa") || "No indicada"}`,
-      `Correo de contacto: ${data.get("email")}`,
-      `Servicio de interés: ${data.get("servicio") || "Por definir"}`,
-      "",
-      "Mensaje:",
-      data.get("mensaje"),
-    ].join("\n");
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+    const originalButtonContent = submitButton.innerHTML;
+    const payload = Object.fromEntries(data.entries());
 
-    status.textContent = "Abriendo tu aplicación de correo para que revises y envíes el mensaje.";
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    submitButton.disabled = true;
+    submitButton.textContent = "Enviando…";
+    status.className = "form-status";
+    status.textContent = "Enviando tu solicitud de forma segura…";
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.message || "No pudimos enviar el mensaje en este momento.");
+      }
+
+      contactForm.reset();
+      contactForm.querySelectorAll("[aria-invalid]").forEach((field) => field.removeAttribute("aria-invalid"));
+      status.className = "form-status is-success";
+      status.textContent = "¡Gracias! Recibimos tu solicitud y te contactaremos pronto.";
+    } catch (error) {
+      status.className = "form-status is-error";
+      status.textContent = error.message || "Ocurrió un error. También puedes escribirnos directamente por correo o WhatsApp.";
+    } finally {
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButtonContent;
+    }
   });
 
   contactForm?.querySelectorAll("input, textarea, select").forEach((field) => {
