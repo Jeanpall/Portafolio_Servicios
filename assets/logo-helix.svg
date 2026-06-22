@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" fill="none">
+  <!-- Circuit H -->
+  <g stroke="#3EBED5" stroke-width="2.5" stroke-linecap="round">
+    <line x1="8" y1="8" x2="8" y2="40"/>
+    <line x1="8" y1="24" x2="28" y2="24"/>
+    <line x1="28" y1="8" x2="28" y2="40"/>
+    <circle cx="8" cy="8" r="4" fill="#3EBED5"/>
+    <circle cx="8" cy="24" r="4" fill="#3EBED5"/>
+    <circle cx="8" cy="40" r="4" fill="#3EBED5"/>
+    <circle cx="28" cy="8" r="4" fill="#3EBED5"/>
+    <circle cx="28" cy="24" r="4" fill="#3EBED5"/>
+    <circle cx="28" cy="40" r="4" fill="#3EBED5"/>
+  </g>
+  <!-- HELIX text -->
+  <text x="40" y="34" font-family="Inter, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="2">HELIX</text>
+</svg>
