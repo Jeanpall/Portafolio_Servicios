@@ -1,60 +1,87 @@
 # HELIX — Portafolio comercial
 
-Landing corporativa con formulario de contacto transaccional y acceso directo a WhatsApp.
+Landing corporativa para presentar los servicios tecnológicos de HELIX, con secciones informativas, acceso a WhatsApp y formulario de contacto conectado a un backend propio.
+
+## Tecnologías utilizadas
+
+- HTML5 semántico.
+- CSS modular con archivos separados para base, componentes, secciones y variables.
+- JavaScript vanilla para navegación, animaciones, configuración pública y envío del formulario.
+- Node.js nativo con módulos ES para servir la aplicación y exponer endpoints internos.
+- API de Resend para el envío de correos transaccionales desde el formulario.
+- Render para despliegue del servidor Node.js.
 
 ## Arquitectura
 
-- Frontend: HTML, CSS y JavaScript sin framework.
-- Backend: servidor Node.js nativo, sin dependencias externas.
-- Correo: API de Resend desde `/api/contact`.
-- Seguridad: validación en cliente y servidor, honeypot, límite básico de solicitudes, tamaño máximo y claves solo en variables de entorno.
+El proyecto usa un frontend liviano sin framework y un backend pequeño en Node.js.
 
-No se usa React, Vue ni Angular porque la página no necesita estado complejo. Mantener el frontend estático reduce peso y mantenimiento; Node aporta únicamente la funcionalidad que sí debe permanecer privada.
+- El frontend renderiza la landing, maneja el menú móvil, animaciones, enlaces de contacto y envío del formulario.
+- El backend sirve los archivos estáticos y expone:
+  - `GET /api/config`: entrega configuración pública necesaria para la interfaz.
+  - `POST /api/contact`: recibe solicitudes del formulario y las envía por correo mediante Resend.
+- Los datos sensibles se administran mediante variables de entorno y no deben escribirse directamente en el README ni en el código público.
 
-## Configuración local
+## Estructura principal
 
-1. Instala Node.js 20 o superior.
-2. Copia `.env.example` como `.env`.
-3. Completa las variables con los datos de Resend.
-4. Ejecuta:
+```text
+.
+├── assets/          # Logos y recursos gráficos
+├── css/             # Estilos organizados por responsabilidad
+├── js/              # Interacciones del frontend
+├── index.html       # Página principal
+├── server.mjs       # Servidor Node.js y endpoints internos
+├── render.yaml      # Configuración de despliegue en Render
+├── package.json     # Scripts y versión mínima de Node
+└── README.md
+```
+
+## Ejecución local
+
+Requisitos:
+
+- Node.js 20 o superior.
+
+Pasos generales:
+
+1. Instalar dependencias si el proyecto las requiere en el futuro.
+2. Configurar las variables de entorno necesarias para correo y canales públicos.
+3. Ejecutar el servidor:
 
 ```bash
 npm start
 ```
 
-5. Abre `http://localhost:8080`.
+4. Abrir la URL local indicada por la consola.
 
-No abras `index.html` directamente: el formulario necesita el endpoint del servidor Node.
+> Nota: se recomienda ejecutar el proyecto desde el servidor Node.js y no abrir `index.html` directamente, porque el formulario depende de los endpoints internos.
 
 ## Variables de entorno
 
-```env
-PORT=8080
-RESEND_API_KEY=re_xxxxxxxxx
-CONTACT_TO=jeanpall2020@gmail.com
-CONTACT_PUBLIC_EMAIL=jdag0698@gmail.com
-CONTACT_FROM=HELIX Web <onboarding@resend.dev>
-WHATSAPP_NUMBER=573143935964
-WHATSAPP_MESSAGE=Hola, vi el portafolio de HELIX y me gustaría conocer más sobre sus servicios.
-```
+El proyecto espera variables para:
 
-- `CONTACT_TO`: bandeja donde HELIX recibe las solicitudes.
-- `CONTACT_PUBLIC_EMAIL`: correo que se muestra en el portafolio.
-- `CONTACT_FROM`: remitente verificado en Resend. Debe pertenecer al dominio configurado.
-- La clave real va únicamente en `.env` o en las variables secretas del hosting. Nunca debe escribirse en `js/main.js`.
+- Puerto de ejecución.
+- Entorno de ejecución.
+- Clave privada de Resend.
+- Correo receptor del formulario.
+- Remitente verificado para Resend.
+- Correo público mostrado en la interfaz.
+- Número y mensaje inicial para WhatsApp.
 
-Para la prueba inicial puede usarse `onboarding@resend.dev` y enviar al correo asociado con la cuenta de Resend. Al publicar, reemplázalo por un remitente del dominio verificado.
+Las variables sensibles deben configurarse en un archivo `.env` local o en el panel del proveedor de hosting. El archivo `.env` no debe subirse al repositorio.
 
-## Configuración recomendada para entregabilidad
+## Seguridad y buenas prácticas
 
-1. Verifica un subdominio de envío, por ejemplo `notificaciones.tihelix.com`, en Resend.
-2. Añade en el DNS los registros SPF y DKIM indicados por Resend.
-3. Añade una política DMARC para el dominio y comienza con `p=none` mientras revisas reportes.
-4. Mantén `CONTACT_FROM` en el dominio verificado y usa el correo del visitante solo como `Reply-To`.
-5. Prueba la entrega en Gmail y Outlook antes de publicar.
+El backend incluye medidas básicas para proteger el formulario:
 
-SPF, DKIM y DMARC mejoran la autenticación y reputación, pero ningún proveedor puede garantizar por completo la ubicación en bandeja principal.
+- Validación de datos en cliente y servidor.
+- Honeypot antispam.
+- Límite básico de solicitudes por IP.
+- Límite de tamaño del cuerpo de la solicitud.
+- Headers de seguridad.
+- Uso de `Reply-To` para responder al visitante sin exponer credenciales.
 
-## WhatsApp
+## Despliegue
 
-El número configurado es `+57 314 3935964`, convertido al formato internacional `573143935964`. Los dos accesos de WhatsApp abren una conversación con un mensaje inicial.
+El proyecto está preparado para ejecutarse como servicio web Node.js. En producción, las credenciales y datos privados deben configurarse desde el proveedor de hosting o como variables secretas.
+
+Para el envío de correos, el dominio remitente debe estar verificado en Resend y contar con la configuración DNS recomendada por el proveedor.
